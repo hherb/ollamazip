@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+
+# Build artifacts
+build/
+dist/
+*.whl
+*.tar.gz
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Tooling caches
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.tox/
+.coverage
+htmlcov/
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# uv / pyenv
+# (.python-version intentionally not ignored — commit it at repo root if you use it)

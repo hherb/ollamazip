@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="ollamazip logo">
+  <!--
+    ollamazip logo: stylised llama head, vertically split by a half-open zipper.
+    Colours: Ollama-ish teal background, cream llama, dark-slate zipper.
+    Feel free to tweak — a single file, pure SVG, no external fonts.
+  -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4aa3b8"/>
+      <stop offset="100%" stop-color="#2d6e85"/>
+    </linearGradient>
+    <linearGradient id="fur" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f5efe1"/>
+      <stop offset="100%" stop-color="#e4d8bd"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded-square background -->
+  <rect x="0" y="0" width="256" height="256" rx="48" fill="url(#bg)"/>
+
+  <!-- Llama head silhouette: two ears + elongated muzzle -->
+  <g id="llama">
+    <!-- Left ear -->
+    <path d="M 78 64 Q 82 32 100 40 L 108 92 Z" fill="url(#fur)" stroke="#7a6a4c" stroke-width="2" stroke-linejoin="round"/>
+    <!-- Right ear -->
+    <path d="M 178 64 Q 174 32 156 40 L 148 92 Z" fill="url(#fur)" stroke="#7a6a4c" stroke-width="2" stroke-linejoin="round"/>
+    <!-- Head + muzzle -->
+    <path d="M 88 96
+             Q 72 110 76 140
+             Q 80 176 104 198
+             Q 120 212 128 212
+             Q 136 212 152 198
+             Q 176 176 180 140
+             Q 184 110 168 96
+             Q 156 84 128 84
+             Q 100 84 88 96 Z"
+          fill="url(#fur)" stroke="#7a6a4c" stroke-width="2.5" stroke-linejoin="round"/>
+
+    <!-- Eyes (on either side of the zipper line) -->
+    <ellipse cx="106" cy="128" rx="5" ry="7" fill="#3a2e1d"/>
+    <ellipse cx="150" cy="128" rx="5" ry="7" fill="#3a2e1d"/>
+
+    <!-- Nose -->
+    <path d="M 120 188 Q 128 194 136 188 Q 132 184 128 184 Q 124 184 120 188 Z"
+          fill="#3a2e1d"/>
+  </g>
+
+  <!-- Zipper running vertically down the centre of the head.
+       Upper half: closed (interlocking teeth).
+       Lower half: open (teeth spread apart).
+       Slider is at the midpoint. -->
+  <g id="zipper">
+    <!-- Closed teeth (upper half, y = 56..128) -->
+    <g fill="#2a2f3a">
+      <rect x="121" y="56"  width="14" height="5" rx="1.5"/>
+      <rect x="121" y="64"  width="14" height="5" rx="1.5"/>
+      <rect x="121" y="72"  width="14" height="5" rx="1.5"/>
+      <rect x="121" y="80"  width="14" height="5" rx="1.5"/>
+      <rect x="121" y="88"  width="14" height="5" rx="1.5"/>
+      <rect x="121" y="96"  width="14" height="5" rx="1.5"/>
+      <rect x="121" y="104" width="14" height="5" rx="1.5"/>
+      <rect x="121" y="112" width="14" height="5" rx="1.5"/>
+      <rect x="121" y="120" width="14" height="5" rx="1.5"/>
+    </g>
+    <!-- Open teeth (lower half, y = 140..204) — split into left + right rows -->
+    <g fill="#2a2f3a">
+      <!-- left row -->
+      <rect x="114" y="140" width="7" height="5" rx="1.5"/>
+      <rect x="112" y="150" width="7" height="5" rx="1.5"/>
+      <rect x="110" y="160" width="7" height="5" rx="1.5"/>
+      <rect x="108" y="170" width="7" height="5" rx="1.5"/>
+      <rect x="108" y="180" width="7" height="5" rx="1.5"/>
+      <!-- right row (mirrored) -->
+      <rect x="135" y="140" width="7" height="5" rx="1.5"/>
+      <rect x="137" y="150" width="7" height="5" rx="1.5"/>
+      <rect x="139" y="160" width="7" height="5" rx="1.5"/>
+      <rect x="141" y="170" width="7" height="5" rx="1.5"/>
+      <rect x="141" y="180" width="7" height="5" rx="1.5"/>
+    </g>
+    <!-- Slider body at the midpoint -->
+    <g>
+      <rect x="112" y="128" width="32" height="14" rx="3" fill="#cfd4dc" stroke="#2a2f3a" stroke-width="1.5"/>
+      <rect x="118" y="131" width="20" height="3" rx="1" fill="#2a2f3a"/>
+      <!-- Pull tab hanging down -->
+      <path d="M 128 142 L 128 152 L 124 156 L 132 156 Z"
+            fill="#cfd4dc" stroke="#2a2f3a" stroke-width="1.5" stroke-linejoin="round"/>
+    </g>
+  </g>
+</svg>

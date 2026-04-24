@@ -7,10 +7,11 @@ name = "ollamazip"
 version = "0.1.0"
 description = "Bundle Ollama models into single portable archives for transfer between machines."
 readme = "README.md"
-license = "MIT"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
 requires-python = ">=3.9"
 authors = [
-    { name = "BiasBuster Team" },
+    { name = "Horst Herb", email = "horst.herb@gmail.com" },
 ]
 keywords = ["ollama", "llm", "model", "bundle", "archive", "transfer"]
 classifiers = [
@@ -18,7 +19,6 @@ classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -31,12 +31,44 @@ classifiers = [
 
 [project.optional-dependencies]
 zstd = ["zstandard>=0.19"]
+gui = [
+    "nicegui>=2.0",
+    "zstandard>=0.19",
+]
+gui-native = [
+    "nicegui>=2.0",
+    "pywebview>=5.0",
+    "zstandard>=0.19",
+]
 
 [project.scripts]
 ollamazip = "ollamazip.cli:main"
 
 [project.urls]
-Repository = "https://github.com/hherb/biasbuster"
+Homepage = "https://github.com/hherb/ollamazip"
+Repository = "https://github.com/hherb/ollamazip"
+Issues = "https://github.com/hherb/ollamazip/issues"
+
+# NOTE: this is a single-package project using the src layout.
+# Do NOT add `[tool.uv.workspace]` — uv will then create a stub
+# pyproject.toml inside src/ollamazip/ and fail with
+# "Two workspace members are both named 'ollamazip'".
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ollamazip"]
+exclude = [
+    ".python-version",
+    "__pycache__",
+    "*.pyc",
+]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    ".python-version",
+    "__pycache__",
+    "*.pyc",
+    ".mypy_cache",
+    ".venv",
+    "dist",
+    "uv.lock",
+]
