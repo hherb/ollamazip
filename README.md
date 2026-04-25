@@ -9,9 +9,9 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/ollamazip/"><img alt="PyPI" src="https://img.shields.io/pypi/v/ollamazip.svg"></a>
-  <a href="https://pypi.org/project/ollamazip/"><img alt="Python" src="https://img.shields.io/pypi/pyversions/ollamazip.svg"></a>
-  <a href="https://www.gnu.org/licenses/agpl-3.0"><img alt="License: AGPL-3.0-or-later" src="https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg"></a>
+  <a href="https://pypi.org/project/ollamazip/"><img alt="PyPI" src="https://img.shields.io/pypi/v/ollamazip?style=flat-square"></a>
+  <a href="https://pypi.org/project/ollamazip/"><img alt="Python" src="https://img.shields.io/pypi/pyversions/ollamazip?style=flat-square"></a>
+  <a href="https://www.gnu.org/licenses/agpl-3.0"><img alt="License: AGPL-3.0-or-later" src="https://img.shields.io/badge/license-AGPL--3.0--or--later-blue?style=flat-square"></a>
 </p>
 
 ## Installation
