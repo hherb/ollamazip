@@ -89,7 +89,56 @@ run in a standalone desktop window instead.
 Ollama stores models as a JSON manifest referencing content-addressed blobs (SHA256).
 `ollamazip pack` reads the manifest, collects all referenced blobs, and bundles them
 into a tar archive. `ollamazip unpack` extracts them into the target machine's Ollama
-model store (`~/.ollama/models/`).
+model store.
+
+## Where ollamazip looks for models
+
+ollamazip discovers Ollama's model directory automatically. The candidates,
+probed in order, are:
+
+1. `$OLLAMA_MODELS` if set (hard override; `~` and `$VAR` are expanded).
+2. The per-user store: `~/.ollama/models` on macOS and Linux,
+   `%USERPROFILE%\.ollama\models` on Windows.
+3. **Linux only:** `/usr/share/ollama/.ollama/models` — the default for the
+   official Ollama systemd-service install, where Ollama runs as a dedicated
+   `ollama` system user.
+
+If candidate (2) is empty/missing on Linux but (3) contains models,
+ollamazip uses (3). Run `ollamazip models` to see which path was picked;
+if the list is empty, it prints every path that was searched.
+
+### Linux systemd-service note
+
+If you installed Ollama via the official Linux script, the model store at
+`/usr/share/ollama/.ollama/models` is owned by the `ollama` system user. As a
+regular user you can **read** that directory (so `ollamazip pack` and
+`ollamazip models` work), but you **cannot write** to it. To install models
+with `ollamazip unpack`, pick one:
+
+- Re-run with `sudo`: `sudo ollamazip unpack <archive>`
+- Add yourself to the `ollama` group and grant group write:
+  ```bash
+  sudo usermod -aG ollama "$USER"   # log out and back in
+  sudo chmod -R g+w /usr/share/ollama/.ollama/models
+  ```
+- Move Ollama's storage to a directory you own and tell the service:
+  ```bash
+  sudo systemctl edit ollama.service
+  # add under [Service]:
+  #     Environment="OLLAMA_MODELS=/path/you/own"
+  sudo systemctl restart ollama
+  export OLLAMA_MODELS=/path/you/own
+  ```
+
+ollamazip prints similar guidance whenever a write operation (`unpack`,
+`delete`, `rename`) hits a permission error on the system path.
+
+> **Fresh-install note:** if you run `ollamazip unpack` *before* installing
+> Ollama as a systemd service (so neither candidate dir contains models
+> yet), ollamazip writes to `~/.ollama/models`. The systemd-service Ollama
+> won't see those models — point the service at your user dir with the
+> `systemctl edit` recipe above, or move the unpacked files into
+> `/usr/share/ollama/.ollama/models` after installing the service.
 
 ## License
 

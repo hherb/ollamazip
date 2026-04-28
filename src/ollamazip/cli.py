@@ -46,10 +46,7 @@ def cmd_unpack(args: argparse.Namespace) -> int:
             verify=args.verify,
             progress=_print_progress,
         )
-    except FileNotFoundError as e:
-        print(f"ERROR: {e}", file=sys.stderr)
-        return 1
-    except ValueError as e:
+    except (FileNotFoundError, PermissionError, ValueError) as e:
         print(f"ERROR: {e}", file=sys.stderr)
         return 1
 
@@ -88,10 +85,13 @@ def cmd_list(args: argparse.Namespace) -> int:
 
 def cmd_models(args: argparse.Namespace) -> int:
     """List locally installed Ollama models."""
-    models = core.list_local_models()
+    home = core.ollama_home()
+    models = core.list_local_models(home=home)
     if not models:
         print("No local Ollama models found.")
-        print(f"Ollama home: {core.ollama_home()}")
+        print("Searched:")
+        for p in core.ollama_home_candidates():
+            print(f"  - {p}")
         return 0
 
     print(f"{'Size':>12}  Model")
@@ -100,7 +100,7 @@ def cmd_models(args: argparse.Namespace) -> int:
     for m in models:
         print(f"{core.human_size(m.size_bytes):>12}  {m.short_ref}")
         total += m.size_bytes
-    print(f"\n{len(models)} models, {core.human_size(total)} total")
+    print(f"\n{len(models)} models, {core.human_size(total)} total (from {home})")
     return 0
 
 

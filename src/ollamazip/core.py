@@ -45,15 +45,119 @@ def _noop_progress(_message: str, _fraction: Optional[float]) -> None:
 # Ollama directory helpers
 # ---------------------------------------------------------------------------
 
-def ollama_home() -> Path:
-    """Return the Ollama models root directory."""
-    env = os.environ.get("OLLAMA_MODELS")
-    if env:
-        return Path(env)
-    system = platform.system()
-    if system == "Windows":
+_LINUX_SYSTEM_HOME = Path("/usr/share/ollama/.ollama/models")
+
+
+def _user_ollama_home() -> Path:
+    """Per-user Ollama models dir: ``~/.ollama/models`` on every supported OS."""
+    if platform.system() == "Windows":
         return Path(os.environ.get("USERPROFILE", Path.home())) / ".ollama" / "models"
     return Path.home() / ".ollama" / "models"
+
+
+def ollama_home_candidates() -> list[Path]:
+    """Ordered list of candidate Ollama model directories to probe.
+
+    Order, highest priority first:
+      1. ``$OLLAMA_MODELS`` if set (explicit override always wins).
+      2. The per-user dir (``~/.ollama/models``, or the Windows equivalent).
+      3. Linux only: ``/usr/share/ollama/.ollama/models`` — the default for
+         the official systemd-service install, where Ollama runs as a
+         dedicated ``ollama`` system user.
+    """
+    candidates: list[Path] = []
+    seen: set[Path] = set()
+
+    def add(p: Path) -> None:
+        rp = Path(os.path.expanduser(os.path.expandvars(str(p))))
+        if rp not in seen:
+            seen.add(rp)
+            candidates.append(rp)
+
+    env = os.environ.get("OLLAMA_MODELS")
+    if env:
+        add(Path(env))
+
+    add(_user_ollama_home())
+
+    if platform.system() == "Linux":
+        add(_LINUX_SYSTEM_HOME)
+
+    return candidates
+
+
+def _has_manifests(home: Path) -> bool:
+    manifests = home / "manifests"
+    if not manifests.is_dir():
+        return False
+    try:
+        for entry in manifests.rglob("*"):
+            if entry.is_file():
+                return True
+    except OSError:
+        return False
+    return False
+
+
+def ollama_home() -> Path:
+    """Return the Ollama models root directory.
+
+    If ``$OLLAMA_MODELS`` is set, it wins unconditionally (hard override).
+    Otherwise probes :func:`ollama_home_candidates` and returns the first
+    one that actually contains manifests; if none are populated, falls back
+    to the first candidate (so a fresh unpack lands in a sensible default).
+    """
+    env = os.environ.get("OLLAMA_MODELS")
+    if env:
+        return Path(os.path.expanduser(os.path.expandvars(env)))
+
+    candidates = ollama_home_candidates()
+    for home in candidates:
+        if _has_manifests(home):
+            return home
+    return candidates[0]
+
+
+def ensure_writable_home(home: Path) -> None:
+    """Verify *home* is writable, creating it if needed.
+
+    Raises ``PermissionError`` with actionable guidance otherwise. The
+    error message is specialised for Ollama's Linux systemd-service path,
+    which is owned by the ``ollama`` system user and not writable by
+    default for regular users.
+    """
+    try:
+        home.mkdir(parents=True, exist_ok=True)
+    except PermissionError as exc:
+        raise PermissionError(_permission_hint(home, str(exc))) from exc
+    if not os.access(home, os.W_OK | os.X_OK):
+        raise PermissionError(_permission_hint(home, "directory is not writable"))
+
+
+def _permission_hint(home: Path, reason: str) -> str:
+    base = f"Cannot write to Ollama models dir {home}: {reason}."
+    if platform.system() == "Linux" and home == _LINUX_SYSTEM_HOME:
+        return (
+            f"{base}\n"
+            f"\nThis is the default location for Ollama installed as a systemd "
+            f"service; it is owned by the 'ollama' system user.\n"
+            f"To modify models in the running Ollama service, pick one:\n"
+            f"  - Re-run the same ollamazip command with sudo.\n"
+            f"  - Grant your user write access:\n"
+            f"        sudo usermod -aG ollama $USER  # then log out/in\n"
+            f"        sudo chmod -R g+w {home}\n"
+            f"  - Or move Ollama's storage to a user-owned dir and tell the\n"
+            f"    service to use it:\n"
+            f"        sudo systemctl edit ollama.service\n"
+            f"        # add: Environment=\"OLLAMA_MODELS=/path/you/own\"\n"
+            f"        sudo systemctl restart ollama\n"
+            f"        export OLLAMA_MODELS=/path/you/own\n"
+        )
+    return (
+        f"{base}\n"
+        f"Set OLLAMA_MODELS to a writable directory, or fix permissions on "
+        f"{home}."
+    )
 
 
 def parse_model_ref(model_ref: str) -> tuple[str, str, str, str]:
@@ -410,6 +514,7 @@ def unpack_model(
     """Unpack an archive into the local Ollama store and return the installed ModelInfo."""
     progress = progress or _noop_progress
     home = home or ollama_home()
+    ensure_writable_home(home)
     archive_path = Path(archive_path)
     if not archive_path.exists():
         raise FileNotFoundError(f"Archive not found: {archive_path}")
@@ -583,6 +688,7 @@ def delete_local_model(
     Returns (manifests_removed, blobs_pruned).
     """
     home = home or ollama_home()
+    ensure_writable_home(home)
     registry, namespace, model, tag = parse_model_ref(model_ref)
     target = manifest_path(home, registry, namespace, model, tag)
     if not target.exists():
@@ -628,6 +734,7 @@ def rename_local_model(
     Blobs are content-addressed and untouched.
     """
     home = home or ollama_home()
+    ensure_writable_home(home)
     old_reg, old_ns, old_model, old_tag = parse_model_ref(old_ref)
     new_reg, new_ns, new_model, new_tag = parse_model_ref(new_ref)
 

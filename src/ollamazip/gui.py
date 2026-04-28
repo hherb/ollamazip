@@ -97,7 +97,9 @@ def _build(state: _State) -> None:
     with ui.header().classes("items-center"):
         ui.label("ollamazip").classes("text-xl font-bold")
         ui.space()
-        ui.label(f"Ollama home: {core.ollama_home()}").classes("text-xs opacity-70")
+        home_label = ui.label(f"Ollama home: {core.ollama_home()}").classes("text-xs opacity-70")
+        candidates = "\n".join(str(p) for p in core.ollama_home_candidates())
+        home_label.tooltip(f"Searched (in order):\n{candidates}")
 
     with ui.tabs().classes("w-full") as tabs:
         tab_models = ui.tab("Local models", icon="storage")
@@ -226,8 +228,8 @@ def _models_tab(state: _State, progress: _Progress, progress_dialog: ui.dialog) 
             info = core.rename_local_model(ref, result)
             ui.notify(f"Renamed to {info.short_ref}", type="positive")
             refresh()
-        except (FileNotFoundError, FileExistsError) as e:
-            ui.notify(f"Rename failed: {e}", type="negative")
+        except (FileNotFoundError, FileExistsError, PermissionError) as e:
+            ui.notify(f"Rename failed: {e}", type="negative", multi_line=True)
 
     async def on_delete() -> None:
         ref = selected_ref()
@@ -254,8 +256,8 @@ def _models_tab(state: _State, progress: _Progress, progress_dialog: ui.dialog) 
                 type="positive",
             )
             refresh()
-        except FileNotFoundError as e:
-            ui.notify(f"Delete failed: {e}", type="negative")
+        except (FileNotFoundError, PermissionError) as e:
+            ui.notify(f"Delete failed: {e}", type="negative", multi_line=True)
 
     with ui.row().classes(
         "w-full items-center q-gutter-sm sticky bottom-0 z-10 "
